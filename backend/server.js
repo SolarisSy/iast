@@ -411,8 +411,14 @@ app.post('/api/chat', async (req, res) => {
         return res.json({ reply: "Não tenho certeza de como processar essa solicitação. Poderia reformular?" });
 
     } catch (error) {
-        console.error('Erro no chat API:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('❌ ERRO NO CHAT API:');
+        console.error('Mensagem:', error.message);
+        console.error('Stack:', error.stack);
+        console.error('Erro completo:', error);
+        res.status(500).json({ 
+            error: 'Internal Server Error',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 });
 
