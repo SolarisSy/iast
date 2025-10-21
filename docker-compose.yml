@@ -55,7 +55,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.services.backend.loadbalancer.server.port=4000"
       - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.backend.entrypoints=web,websecure"
+      - "traefik.http.routers.backend.priority=100"
     volumes:
       # Monta o código fonte para hot-reload
       - ./backend:/app
