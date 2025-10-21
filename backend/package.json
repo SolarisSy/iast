@@ -1,0 +1,24 @@
+{
+  "name": "iast-backend",
+  "version": "1.0.0",
+  "description": "Servidor de API para a aplicação IAST",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@langchain/community": "^0.2.11",
+    "@langchain/openai": "^0.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.19.2",
+    "form-data": "^4.0.4",
+    "hnswlib-node": "^2.1.1",
+    "langchain": "^0.2.5",
+    "multer": "^2.0.2",
+    "openai": "^6.6.0",
+    "pdf-parse": "1.1.1",
+    "ws": "^8.18.3"
+  }
+}
