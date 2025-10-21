@@ -635,6 +635,16 @@ async function processChatMessage(message, conversationHistory) {
     }
 }
 
+// --- HEALTH CHECK ENDPOINT ---
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        service: 'iast-backend',
+        version: '1.0.0'
+    });
+});
+
 // --- INICIALIZAÇÃO DO SERVIDOR ---
 
 app.listen(port, () => {

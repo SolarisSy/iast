@@ -1,0 +1,110 @@
+# ===========================================
+# DOCKERFILE - FRONTEND NEXT.JS
+# ===========================================
+
+# Usar imagem oficial do Node.js (Alpine para menor tamanho)
+FROM node:20-alpine AS base
+
+# Instalar dependências necessárias para o Alpine
+RUN apk add --no-cache libc6-compat
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# ===========================================
+# STAGE 1: INSTALAÇÃO DE DEPENDÊNCIAS
+# ===========================================
+FROM base AS deps
+
+# Copiar arquivos de dependências
+COPY package.json package-lock.json* ./
+
+# Instalar dependências
+RUN npm ci --legacy-peer-deps
+
+# ===========================================
+# STAGE 2: BUILD (apenas para produção)
+# ===========================================
+FROM base AS builder
+
+WORKDIR /app
+
+# Copiar dependências instaladas
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copiar código fonte
+COPY . .
+
+# Build condicional (apenas em produção)
+ARG NODE_ENV=development
+ENV NODE_ENV=${NODE_ENV}
+
+# Desabilitar telemetria do Next.js
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Fazer build apenas em produção
+RUN if [ "$NODE_ENV" = "production" ]; then \
+      npm run build; \
+    fi
+
+# ===========================================
+# STAGE 3: RUNTIME (DESENVOLVIMENTO)
+# ===========================================
+FROM base AS development
+
+WORKDIR /app
+
+# Copiar dependências
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copiar código fonte
+COPY . .
+
+# Expor porta
+EXPOSE 3001
+
+# Definir variável de ambiente
+ENV PORT=3001
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Comando de desenvolvimento
+CMD ["npm", "run", "dev"]
+
+# ===========================================
+# STAGE 4: RUNTIME (PRODUÇÃO)
+# ===========================================
+FROM base AS production
+
+WORKDIR /app
+
+# Criar usuário não-root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copiar apenas arquivos necessários do build
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+# Definir permissões
+RUN chown -R nextjs:nodejs /app
+
+# Mudar para usuário não-root
+USER nextjs
+
+# Expor porta
+EXPOSE 3001
+
+# Definir variável de ambiente
+ENV PORT=3001
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Comando de produção
+CMD ["node", "server.js"]
+
+# ===========================================
+# STAGE PADRÃO (baseado em NODE_ENV)
+# ===========================================
+FROM ${NODE_ENV:-development} AS final
+

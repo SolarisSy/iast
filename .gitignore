@@ -57,10 +57,12 @@ backend/.env.production
 .env.*
 !.env.example
 !.env.local.example
+!env.docker.example
 .env.local
 .env.development
 .env.production
 .env.test
+.env.docker
 
 # ===========================================
 # LOGS E DEBUG
