@@ -19,8 +19,12 @@ FROM base AS deps
 # Copiar arquivos de dependências
 COPY package.json package-lock.json* ./
 
-# Instalar dependências
-RUN npm ci --legacy-peer-deps
+# Instalar dependências (usar npm install se package-lock.json não existir)
+RUN if [ -f package-lock.json ]; then \
+      npm ci --legacy-peer-deps; \
+    else \
+      npm install --legacy-peer-deps; \
+    fi
 
 # ===========================================
 # STAGE 2: BUILD (apenas para produção)
