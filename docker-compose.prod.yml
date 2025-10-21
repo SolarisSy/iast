@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ==========================================
   # FRONTEND - NEXT.JS (PRODUÇÃO)
@@ -10,9 +8,8 @@ services:
       dockerfile: Dockerfile.frontend
       args:
         NODE_ENV: production
-    container_name: iast-frontend-prod
     ports:
-      - "3001:3001"
+      - "${FRONTEND_PORT:-3001}:3001"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:4000}
@@ -38,13 +35,12 @@ services:
       dockerfile: Dockerfile
       args:
         NODE_ENV: production
-    container_name: iast-backend-prod
     ports:
-      - "4000:4000"
+      - "${BACKEND_PORT:-4000}:4000"
     environment:
       - NODE_ENV=production
       - PORT=4000
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:?OPENAI_API_KEY is required}
     volumes:
       - ./src/corpus:/app/corpus:ro
       - backend-uploads-prod:/app/uploads
