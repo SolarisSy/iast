@@ -5,6 +5,11 @@ import { Message, MessageProps } from '@/components/chat/Message';
 import { AudioControls } from '@/components/audio/AudioControls';
 import { v4 as uuidv4 } from 'uuid';
 
+// URL da API (usa variável de ambiente, string vazia para rota relativa, ou fallback para localhost)
+const API_URL = process.env.NEXT_PUBLIC_API_URL !== undefined 
+  ? process.env.NEXT_PUBLIC_API_URL 
+  : (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '' : 'http://localhost:4000');
+
 export const Chat = () => {
   const [messages, setMessages] = useState<MessageProps[]>([]);
   const [input, setInput] = useState('');
@@ -33,7 +38,7 @@ export const Chat = () => {
       formData.append('audio', audioBlob, 'audio.webm');
       formData.append('history', JSON.stringify(messages));
 
-      const response = await fetch('http://localhost:4000/api/audio/chat', {
+      const response = await fetch(`${API_URL}/api/audio/chat`, {
         method: 'POST',
         body: formData,
       });
@@ -105,7 +110,7 @@ export const Chat = () => {
     setInput('');
 
     try {
-      const response = await fetch('http://localhost:4000/api/chat', {
+      const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

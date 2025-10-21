@@ -12,7 +12,7 @@ services:
       - "${FRONTEND_PORT:-3001}:3001"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://backend:4000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-}
       - PORT=3001
     labels:
       - "traefik.enable=true"
@@ -51,6 +51,11 @@ services:
       - NODE_ENV=development
       - PORT=4000
       - OPENAI_API_KEY=${OPENAI_API_KEY:?OPENAI_API_KEY is required}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.backend.loadbalancer.server.port=4000"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web,websecure"
     volumes:
       # Monta o código fonte para hot-reload
       - ./backend:/app
