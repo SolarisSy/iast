@@ -27,9 +27,9 @@ ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
 
 RUN if [ "$NODE_ENV" = "production" ]; then \
-      npm ci --only=production; \
+      npm ci --only=production --legacy-peer-deps; \
     else \
-      npm install; \
+      npm install --legacy-peer-deps; \
     fi
 
 # Copiar código fonte
