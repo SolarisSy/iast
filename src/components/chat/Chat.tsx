@@ -19,17 +19,20 @@ export const Chat = () => {
   useEffect(() => {
     // Se tiver variável de ambiente definida, usa ela
     if (process.env.NEXT_PUBLIC_API_URL) {
+      console.log('[API URL] Usando variável de ambiente:', process.env.NEXT_PUBLIC_API_URL);
       setApiUrl(process.env.NEXT_PUBLIC_API_URL);
       return;
     }
     
     // Se estiver em localhost, usa porta 4000
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      console.log('[API URL] Detectado localhost, usando http://localhost:4000');
       setApiUrl('http://localhost:4000');
       return;
     }
     
     // Em produção, usa URL relativa (mesmo domínio)
+    console.log('[API URL] Detectado produção, usando URL relativa. Hostname:', window.location.hostname);
     setApiUrl('');
   }, []);
 
@@ -124,7 +127,10 @@ export const Chat = () => {
     setInput('');
 
     try {
-      const response = await fetch(`${apiUrl}/api/chat`, {
+      const url = `${apiUrl}/api/chat`;
+      console.log('[FETCH] Enviando requisição para:', url, 'apiUrl:', apiUrl);
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
