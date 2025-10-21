@@ -8,11 +8,11 @@ services:
       dockerfile: Dockerfile.frontend
       args:
         NODE_ENV: development
+        NEXT_PUBLIC_API_URL: ""
     ports:
       - "${FRONTEND_PORT:-3001}:3001"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-}
       - PORT=3001
     labels:
       - "traefik.enable=true"

@@ -51,6 +51,10 @@ COPY . .
 ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
 
+# Configurar URL da API (vazio para URL relativa em produção)
+ARG NEXT_PUBLIC_API_URL=""
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 # Desabilitar telemetria do Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -76,7 +80,9 @@ COPY . .
 EXPOSE 3001
 
 # Definir variável de ambiente
+ARG NEXT_PUBLIC_API_URL=""
 ENV PORT=3001
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Comando de desenvolvimento
