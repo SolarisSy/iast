@@ -32,13 +32,36 @@ const CORPUS_PATH = path.join(__dirname, '..', 'src', 'corpus');
 
 // Middleware
 app.use(cors({
-  origin: [
-    'http://localhost:3001',
-    'http://localhost:3000',
-    /\.ngrok-free\.app$/,  // Permite qualquer subdomínio do Ngrok
-    /\.ngrok\.io$/          // Permite qualquer subdomínio do Ngrok (formato antigo)
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    // Permitir requisições sem origem (como Postman) ou de qualquer origem em desenvolvimento
+    if (!origin || process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    const allowedOrigins = [
+      'http://localhost:3001',
+      'http://localhost:3000',
+      /\.ngrok-free\.app$/,
+      /\.ngrok\.io$/,
+      /\.easypanel\.host$/
+    ];
+    
+    const isAllowed = allowedOrigins.some(pattern => {
+      if (pattern instanceof RegExp) {
+        return pattern.test(origin);
+      }
+      return pattern === origin;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning']
 }));
 app.use(express.json());
 
