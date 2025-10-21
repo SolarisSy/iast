@@ -140,7 +140,9 @@ export const Chat = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        const errorText = await response.text();
+        console.error('[FETCH ERROR] Status:', response.status, 'Response:', errorText);
+        throw new Error(`Backend error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
