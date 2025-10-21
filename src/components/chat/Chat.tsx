@@ -11,27 +11,27 @@ export const Chat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessingAudio, setIsProcessingAudio] = useState(false);
   const [audioResponseUrl, setAudioResponseUrl] = useState<string | undefined>();
+  const [apiUrl, setApiUrl] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
-  
-  // URL da API (detecta dinamicamente se está em produção ou desenvolvimento)
-  const getApiUrl = () => {
-    // Se estiver no servidor (SSR), retorna string vazia
-    if (typeof window === 'undefined') return '';
-    
+
+  // Detecta a URL da API no cliente após montagem
+  useEffect(() => {
     // Se tiver variável de ambiente definida, usa ela
     if (process.env.NEXT_PUBLIC_API_URL) {
-      return process.env.NEXT_PUBLIC_API_URL;
+      setApiUrl(process.env.NEXT_PUBLIC_API_URL);
+      return;
     }
     
     // Se estiver em localhost, usa porta 4000
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return 'http://localhost:4000';
+      setApiUrl('http://localhost:4000');
+      return;
     }
     
     // Em produção, usa URL relativa (mesmo domínio)
-    return '';
-  };
+    setApiUrl('');
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -52,7 +52,7 @@ export const Chat = () => {
       formData.append('audio', audioBlob, 'audio.webm');
       formData.append('history', JSON.stringify(messages));
 
-      const response = await fetch(`${getApiUrl()}/api/audio/chat`, {
+      const response = await fetch(`${apiUrl}/api/audio/chat`, {
         method: 'POST',
         body: formData,
       });
@@ -124,7 +124,7 @@ export const Chat = () => {
     setInput('');
 
     try {
-      const response = await fetch(`${getApiUrl()}/api/chat`, {
+      const response = await fetch(`${apiUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
