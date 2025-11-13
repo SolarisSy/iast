@@ -3,11 +3,13 @@
 import { useState, useRef, useEffect } from 'react';
 
 interface AudioRecorderProps {
+  onRecordingStart?: () => void;
+  onRecordingStop?: () => void;
   onRecordingComplete: (audioBlob: Blob) => void;
   onError?: (error: string) => void;
 }
 
-export const AudioRecorder = ({ onRecordingComplete, onError }: AudioRecorderProps) => {
+export const AudioRecorder = ({ onRecordingStart, onRecordingStop, onRecordingComplete, onError }: AudioRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -24,6 +26,14 @@ export const AudioRecorder = ({ onRecordingComplete, onError }: AudioRecorderPro
 
   const startRecording = async () => {
     try {
+      console.log('🎤 AudioRecorder: startRecording() chamado');
+      
+      // ✅ PRIMEIRO: Notificar IMEDIATAMENTE que a gravação está iniciando
+      onRecordingStart?.();
+      
+      // Pequeno delay para garantir que o estado foi atualizado
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
       // Solicitar áudio com melhor qualidade
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -52,8 +62,23 @@ export const AudioRecorder = ({ onRecordingComplete, onError }: AudioRecorderPro
         }
       };
 
-      mediaRecorderRef.current.onstop = () => {
+      mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        
+        // ✅ Validação: Verificar duração mínima
+        try {
+          const audioDuration = await getAudioDuration(audioBlob);
+          
+          if (audioDuration < 0.5) { // Menos de 0.5 segundos
+            onError?.('Áudio muito curto. Fale por pelo menos 1 segundo.');
+            audioChunksRef.current = [];
+            stream.getTracks().forEach(track => track.stop());
+            return;
+          }
+        } catch (error) {
+          console.error('Erro ao validar duração do áudio:', error);
+        }
+        
         onRecordingComplete(audioBlob);
         
         // Parar todas as tracks do stream
@@ -77,8 +102,12 @@ export const AudioRecorder = ({ onRecordingComplete, onError }: AudioRecorderPro
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
+      console.log('⏹️ AudioRecorder: stopRecording() chamado');
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      
+      // ✅ Notificar que a gravação parou
+      onRecordingStop?.();
       
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -91,6 +120,21 @@ export const AudioRecorder = ({ onRecordingComplete, onError }: AudioRecorderPro
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Função auxiliar para obter duração do áudio
+  const getAudioDuration = (blob: Blob): Promise<number> => {
+    return new Promise((resolve) => {
+      const audio = new Audio();
+      audio.onloadedmetadata = () => {
+        resolve(audio.duration);
+        URL.revokeObjectURL(audio.src);
+      };
+      audio.onerror = () => {
+        resolve(0);
+      };
+      audio.src = URL.createObjectURL(blob);
+    });
   };
 
   if (hasPermission === false) {

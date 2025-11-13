@@ -1,0 +1,7 @@
+# front/nixpacks.toml
+
+# Adiciona pacotes do sistema (apt) necessários para a fase de 'setup'
+[phases.setup]
+# python3 e build-essential são necessários para compilar dependências nativas
+# como 'hnswlib-node', que é uma dependência do LangChain.
+aptPkgs = ["python3", "build-essential"]

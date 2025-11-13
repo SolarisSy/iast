@@ -1,18 +1,17 @@
+import React from 'react';
 import Avatar from '@/components/avatar/Avatar';
-import CitationChips from './CitationChips';
 import { ExpandableDocument } from './ExpandableDocument';
 
 export interface MessageProps {
   text: string;
   sender: 'user' | 'bot';
-  citations?: { title: string; url: string }[];
   document?: {
     title: string;
     content: string;
   };
 }
 
-export const Message = ({ text, sender, citations, document }: MessageProps) => {
+export const Message = ({ text, sender, document }: MessageProps) => {
   const isUser = sender === 'user';
 
   return (
@@ -37,13 +36,6 @@ export const Message = ({ text, sender, citations, document }: MessageProps) => 
         >
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{text}</p>
         </div>
-        
-        {/* Citations */}
-        {citations && citations.length > 0 && (
-          <div className="mt-2">
-            <CitationChips citations={citations} />
-          </div>
-        )}
         
         {/* Expandable Document */}
         {document && (

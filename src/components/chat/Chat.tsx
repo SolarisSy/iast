@@ -11,34 +11,45 @@ export const Chat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessingAudio, setIsProcessingAudio] = useState(false);
   const [audioResponseUrl, setAudioResponseUrl] = useState<string | undefined>();
-  const [apiUrl, setApiUrl] = useState('');
+  const [isRecording, setIsRecording] = useState(false); // ✅ NOVO: Track recording state
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
-
-  // Detecta a URL da API no cliente após montagem
-  useEffect(() => {
-    // Se tiver variável de ambiente definida, usa ela
-    if (process.env.NEXT_PUBLIC_API_URL) {
-      console.log('[API URL] Usando variável de ambiente:', process.env.NEXT_PUBLIC_API_URL);
-      setApiUrl(process.env.NEXT_PUBLIC_API_URL);
-      return;
-    }
-    
-    // Se estiver em localhost, usa porta 4000
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      console.log('[API URL] Detectado localhost, usando http://localhost:4000');
-      setApiUrl('http://localhost:4000');
-      return;
-    }
-    
-    // Em produção, usa URL relativa (mesmo domínio)
-    console.log('[API URL] Detectado produção, usando URL relativa. Hostname:', window.location.hostname);
-    setApiUrl('');
-  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // ✅ NOVO: Efeito para parar áudio quando gravação iniciar
+  useEffect(() => {
+    if (isRecording) {
+      console.log('🎙️ Gravação iniciada - parando áudio...');
+      
+      // Parar o áudio imediatamente
+      if (currentAudioRef.current) {
+        try {
+          currentAudioRef.current.pause();
+          currentAudioRef.current.currentTime = 0;
+          console.log('✅ Áudio pausado com sucesso');
+        } catch (error) {
+          console.error('Erro ao pausar áudio:', error);
+        }
+        currentAudioRef.current = null;
+      }
+      
+      // Limpar o URL do áudio para remover o player
+      setAudioResponseUrl(undefined);
+    }
+  }, [isRecording]);
+
+  const handleRecordingStart = () => {
+    console.log('📍 handleRecordingStart chamado');
+    setIsRecording(true);
+  };
+
+  const handleRecordingStop = () => {
+    console.log('📍 handleRecordingStop chamado');
+    setIsRecording(false);
+  };
 
   const handleAudioMessage = async (audioBlob: Blob) => {
     setIsProcessingAudio(true);
@@ -55,12 +66,20 @@ export const Chat = () => {
       formData.append('audio', audioBlob, 'audio.webm');
       formData.append('history', JSON.stringify(messages));
 
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
       const response = await fetch(`${apiUrl}/api/audio/chat`, {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        
+        // ✅ Verificar se é erro de transcrição inválida
+        if (errorData.invalidTranscription) {
+          throw new Error(errorData.error || 'Por favor, grave novamente. Certifique-se de falar claramente próximo ao microfone.');
+        }
+        
         throw new Error('Network response was not ok');
       }
 
@@ -127,10 +146,8 @@ export const Chat = () => {
     setInput('');
 
     try {
-      const url = `${apiUrl}/api/chat`;
-      console.log('[FETCH] Enviando requisição para:', url, 'apiUrl:', apiUrl);
-      
-      const response = await fetch(url, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -140,9 +157,7 @@ export const Chat = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[FETCH ERROR] Status:', response.status, 'Response:', errorText);
-        throw new Error(`Backend error: ${response.status} - ${errorText}`);
+        throw new Error('Network response was not ok');
       }
 
       const data = await response.json();
@@ -170,8 +185,8 @@ export const Chat = () => {
     <div className="flex flex-col h-[calc(100vh-8rem)] bg-[#0a0a0a] rounded-2xl overflow-hidden shadow-2xl border border-white/5">
       {/* Header */}
       <div className="px-8 py-6 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
-        <h2 className="text-lg font-medium text-white/90 tracking-tight">Assistente Jurídico</h2>
-        <p className="text-sm text-white/40 mt-1">Especialista em Direito Administrativo</p>
+        <h2 className="text-lg font-medium text-white/90 tracking-tight">Consultor Técnico-Comercial</h2>
+        <p className="text-sm text-white/40 mt-1">Ensaios Não Destrutivos • Metrologia • Inspeção de Materiais</p>
       </div>
 
       {/* Messages Area */}
@@ -185,7 +200,7 @@ export const Chat = () => {
                 </svg>
               </div>
               <p className="text-white/60 text-sm leading-relaxed">
-                Comece uma conversa fazendo uma pergunta sobre processos administrativos disciplinares ou explore os tópicos disponíveis.
+                Comece uma conversa fazendo uma pergunta sobre equipamentos, ensaios não destrutivos, metrologia ou aplicações técnicas.
               </p>
             </div>
           </div>
@@ -216,6 +231,8 @@ export const Chat = () => {
         {/* Controles de áudio */}
         <div className="mb-4">
           <AudioControls 
+            onRecordingStart={handleRecordingStart}
+            onRecordingStop={handleRecordingStop}
             onAudioMessage={handleAudioMessage}
             audioResponseUrl={audioResponseUrl}
             currentAudioRef={currentAudioRef}
@@ -236,7 +253,7 @@ export const Chat = () => {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Faça uma pergunta..."
+            placeholder="Pergunte sobre equipamentos, ensaios ou aplicações técnicas..."
             disabled={isLoading || isProcessingAudio}
             className="w-full bg-white/5 text-white placeholder-white/30 rounded-xl px-6 py-4 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-white/20 transition-all duration-200 disabled:opacity-50 border border-white/5"
           />

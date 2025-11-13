@@ -5,14 +5,26 @@ import { AudioRecorder } from './AudioRecorder';
 import { AudioPlayer } from './AudioPlayer';
 
 interface AudioControlsProps {
+  onRecordingStart?: () => void;
+  onRecordingStop?: () => void;
   onAudioMessage: (audioBlob: Blob) => void;
   onError?: (error: string) => void;
   audioResponseUrl?: string;
   currentAudioRef?: React.MutableRefObject<HTMLAudioElement | null>;
 }
 
-export const AudioControls = ({ onAudioMessage, onError, audioResponseUrl, currentAudioRef }: AudioControlsProps) => {
+export const AudioControls = ({ onRecordingStart, onRecordingStop, onAudioMessage, onError, audioResponseUrl, currentAudioRef }: AudioControlsProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleRecordingStart = () => {
+    console.log('🔴 AudioControls: Gravação INICIADA');
+    onRecordingStart?.();
+  };
+
+  const handleRecordingStop = () => {
+    console.log('⏹️ AudioControls: Gravação PARADA');
+    onRecordingStop?.();
+  };
 
   const handleRecordingComplete = async (audioBlob: Blob) => {
     setIsProcessing(true);
@@ -59,6 +71,8 @@ export const AudioControls = ({ onAudioMessage, onError, audioResponseUrl, curre
 
       {/* Componente de gravação */}
       <AudioRecorder 
+        onRecordingStart={handleRecordingStart}
+        onRecordingStop={handleRecordingStop}
         onRecordingComplete={handleRecordingComplete}
         onError={onError}
       />

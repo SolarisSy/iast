@@ -19,56 +19,82 @@ export const AudioPlayer = ({ audioUrl, onPlaybackComplete, onError, currentAudi
   // Usar a ref compartilhada se fornecida, caso contrário usar a local
   const audioRef = currentAudioRef || localAudioRef;
 
+  // ✅ NOVO: Limpar áudio quando componente for desmontado ou URL for undefined
   useEffect(() => {
-    if (audioUrl) {
-      // Parar qualquer áudio anterior
+    return () => {
       if (audioRef.current) {
+        console.log('🧹 AudioPlayer: Componente desmontando - limpando áudio...');
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
+        audioRef.current.src = '';
+        audioRef.current = null;
+      }
+    };
+  }, []); // Roda apenas no unmount
+
+  useEffect(() => {
+    if (audioUrl) {
+      console.log('🔊 AudioPlayer: Novo audioUrl recebido, criando player...');
+      
+      // ✅ CRÍTICO: Parar e destruir qualquer áudio anterior COMPLETAMENTE
+      if (audioRef.current) {
+        console.log('🛑 Parando áudio anterior...');
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.src = ''; // Limpar src
+        audioRef.current = null;
       }
       
       setIsLoading(true);
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
 
-      audio.addEventListener('loadedmetadata', () => {
+      const handleLoadedMetadata = () => {
         setDuration(audio.duration);
         setIsLoading(false);
         // Auto-play quando o áudio estiver carregado
         audio.play()
           .then(() => {
             setIsPlaying(true);
-            console.log('Áudio iniciado automaticamente');
+            console.log('✅ Áudio iniciado automaticamente');
           })
           .catch(err => {
-            console.error('Erro ao iniciar áudio automaticamente:', err);
-            // Navegadores podem bloquear auto-play, mas o usuário pode clicar no botão
+            console.error('❌ Erro ao iniciar áudio automaticamente:', err);
           });
-      });
+      };
 
-      audio.addEventListener('timeupdate', () => {
+      const handleTimeUpdate = () => {
         setCurrentTime(audio.currentTime);
-      });
+      };
 
-      audio.addEventListener('ended', () => {
+      const handleEnded = () => {
         setIsPlaying(false);
         setCurrentTime(0);
         onPlaybackComplete?.();
-      });
+      };
 
-      audio.addEventListener('error', (e) => {
-        console.error('Erro no player de áudio:', e);
+      const handleError = (e: Event) => {
+        console.error('❌ Erro no player de áudio:', e);
         setIsLoading(false);
         setIsPlaying(false);
         onError?.('Erro ao reproduzir o áudio');
-      });
+      };
 
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('error', handleError);
+
+      // ✅ CLEANUP: Parar e remover TUDO quando componente desmontar
       return () => {
+        console.log('🧹 AudioPlayer: Limpando áudio...');
         audio.pause();
-        audio.removeEventListener('loadedmetadata', () => {});
-        audio.removeEventListener('timeupdate', () => {});
-        audio.removeEventListener('ended', () => {});
-        audio.removeEventListener('error', () => {});
+        audio.currentTime = 0;
+        audio.src = ''; // Limpar src para liberar memória
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        audio.removeEventListener('timeupdate', handleTimeUpdate);
+        audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('error', handleError);
       };
     }
   }, [audioUrl, onPlaybackComplete, onError]);

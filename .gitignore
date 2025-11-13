@@ -45,6 +45,7 @@ backend/dist/
 backend/build/
 backend/logs/
 backend/*.log
+backend/.env
 backend/.env.local
 backend/.env.development
 backend/.env.production
@@ -52,19 +53,14 @@ backend/.env.production
 # ===========================================
 # ARQUIVOS DE AMBIENTE
 # ===========================================
-# .env e backend/.env são permitidos para deploy
-# ATENÇÃO: Adicione chaves reais apenas em repositórios privados!
+.env
 .env.*
-!.env
 !.env.example
-!env.example
 !.env.local.example
-!env.docker.example
 .env.local
 .env.development
 .env.production
 .env.test
-.env.docker
 
 # ===========================================
 # LOGS E DEBUG

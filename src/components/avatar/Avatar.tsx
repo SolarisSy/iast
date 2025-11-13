@@ -11,8 +11,8 @@ export default function Avatar({ size = 'large' }: AvatarProps) {
   return (
     <div className={`${containerClass} rounded-full flex items-center justify-center shadow-lg overflow-hidden`}>
       <Image
-        src="/anderson.jpg"
-        alt="Avatar do Mentor"
+        src="/allanfraga.png"
+        alt="Allan Fraga - Consultor Técnico-Comercial"
         width={dimensions}
         height={dimensions}
         className="object-cover"

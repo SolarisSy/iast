@@ -1,18 +1,30 @@
 import { Chat } from "@/components/chat/Chat";
 import Avatar from "@/components/avatar/Avatar";
 import { VideoLibrary } from "@/components/video/VideoLibrary";
+import Link from "next/link";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] text-white p-4 md:p-8">
       <div className="max-w-[1800px] mx-auto">
+        {/* Admin Link */}
+        <div className="flex justify-end mb-4">
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors border border-white/20 text-sm"
+          >
+            <span>⚙️</span>
+            <span>Painel Admin</span>
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">
           <h1 className="text-2xl md:text-3xl font-light text-white/90 tracking-tight mb-3">
-            Comentários e modelos de atos e procedimentos
+            Consultoria Técnica-Comercial Especializada
           </h1>
           <p className="text-sm text-white/40">
-            para implantação da Lei Federal n° 14.133
+            Ensaios Não Destrutivos • Metrologia • Inspeção de Materiais • Metalografia
           </p>
         </div>
 
@@ -24,8 +36,9 @@ export default function Home() {
               <Avatar />
             </div>
             <div className="text-center">
-              <h2 className="text-sm md:text-base font-medium text-white/80 mb-1">Anderson Silva</h2>
-              <p className="text-xs text-white/40">Especialista em Direito Administrativo</p>
+              <h2 className="text-sm md:text-base font-medium text-white/80 mb-1">Allan Fraga</h2>
+              <p className="text-xs text-white/40">Consultor Técnico-Comercial</p>
+              <p className="text-xs text-white/30 mt-1">END • Metrologia • Metalografia</p>
             </div>
           </div>
 
