@@ -59,15 +59,15 @@ export function ChatList({ chats, selectedChat, onSelectChat, loading }: ChatLis
   }
 
   return (
-    <div className="bg-white/5 rounded-xl border border-white/10 h-full flex flex-col">
+    <div className="bg-white/5 rounded-xl border border-white/10 h-full flex flex-col overflow-hidden max-h-full">
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
+      <div className="p-4 border-b border-white/10 flex-shrink-0">
         <h3 className="text-lg font-bold text-white">Conversas</h3>
         <p className="text-white/60 text-sm">{chats.length} {chats.length === 1 ? 'conversa' : 'conversas'}</p>
       </div>
 
       {/* Lista de Chats */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar" style={{ minHeight: 0, maxHeight: '100%' }}>
         {chats.map((chat, index) => (
           <button
             key={chat.id || `chat-${index}`}

@@ -681,9 +681,9 @@ export default function WhatsAppChat() {
 
       {/* Grid de Chat (tipo WhatsApp Web) */}
       {selectedInstance && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-300px)]">
+        <div className="flex gap-6" style={{ height: 'calc(100vh - 300px)', maxHeight: 'calc(100vh - 300px)' }}>
           {/* Sidebar - Lista de Chats */}
-          <div className="lg:col-span-1">
+          <div className="w-full lg:w-1/3 h-full max-h-full overflow-hidden flex-shrink-0">
             <ChatList
               chats={chats}
               selectedChat={selectedChat}
@@ -693,7 +693,7 @@ export default function WhatsAppChat() {
           </div>
 
           {/* Área Principal - Mensagens */}
-          <div className="lg:col-span-2">
+          <div className="hidden lg:block lg:w-2/3 h-full max-h-full overflow-hidden flex-shrink-0">
             <MessageView
               chat={selectedChat}
               messages={messages}
